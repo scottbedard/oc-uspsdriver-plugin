@@ -1,0 +1,21 @@
+{
+    "name": "bedard/usps",
+    "description": "Enables shipping calculations through the U.S. Postal Service.",
+    "homepage": "http://scottbedard.net/",
+    "keywords": ["octobercms", "ecommerce", "shop"],
+    "authors": [
+        {
+            "name": "Scott Bedard",
+            "email": "scottbedard90@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Bedard\\Shop\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": ">=5.4.0",
+        "bedard/shipping": "dev-master"
+    }
+}
