@@ -9,10 +9,11 @@ class Install extends Seeder
     public function run()
     {
         $driver = Driver::firstOrCreate([
-            'name'          => 'U.S. Postal Service',
-            'type'          => 'shipping',
-            'class'         => 'Bedard\USPS\Classes\USPS',
-            'is_default'    => false,
+            'name'              => 'U.S. Postal Service',
+            'type'              => 'shipping',
+            'class'             => 'Bedard\USPS\Classes\USPS',
+            'is_configurable'   => true,
+            'is_default'        => false,
         ]);
 
         $logo = new File;

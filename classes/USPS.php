@@ -88,25 +88,42 @@ class USPS extends ShippingBase implements ShippingInterface {
             $usps->useTestingServer();
         }
 
-        if ($this->cart->address->country_id == 1) {
-            $usps->setDestination($this->cart->address->postal_code);
+        if ($this->cart->shipping_address->country_id == 1) {
+            $usps->setDestination($this->cart->shipping_address->postal_code);
         } else {
-            $usps->setDestination($this->cart->address->country->name);
+            $usps->setDestination($this->cart->shipping_address->country->name);
         }
 
-        // todo: verify package dimensions
+        $packaging = 1;
+        foreach ($this->cart->items as $item) {
+            if ($item->inventory->product->packaging_id > $packaging) {
+                $packaging = $item->inventory->product->packaging_id;
+            }
+        }
+
+        $codes = $this->getCodes();
+        $dimensions = ['length' => 6, 'width' => 6, 'height' => 0.1];
+        if ($packaging == 1) {
+            $codes = array_diff($codes, ['_0', '_1', '3']);
+        } elseif ($packaging == 2) {
+            $codes = array_diff($codes, ['_0', '_2']);
+            $dimensions = ['length' => 12, 'width' => 10, 'height' => 0.1];
+        } elseif ($packaging == 3) {
+            $codes = array_diff($codes, ['_1', '_2']);
+            $dimensions = ['length' => 12, 'width' => 12, 'height' => 12];
+        }
+
         $usps
             ->setOrigin($this->getConfig('origin'))
             ->setDimensions([
-                'length'    => 12,
-                'width'     => 12,
-                'height'    => 4,
+                'length'    => $dimensions['length'],
+                'width'     => $dimensions['width'],
+                'height'    => $dimensions['height'],
                 'pounds'    => 0,
                 'ounces'    => $this->cart->getWeight('oz'),
             ])
             ->setValue($this->cart->subtotal);
 
-        $codes = $this->getCodes();
         return array_filter($usps->calculate(), function($rate) use ($codes) {
             $rate['class'] = 'Bedard\USPS\Classes\USPS';
             return in_array($rate['code'], $codes, true);

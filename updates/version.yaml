@@ -1,3 +1,6 @@
 1.0.1:
     - First version of USPS
     - install.php
+    - add_packaging_column.php
+    - create_packagings_table.php
+    - seed_packaging.php
