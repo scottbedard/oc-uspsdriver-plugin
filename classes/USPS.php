@@ -1,6 +1,6 @@
 <?php namespace Bedard\USPS\Classes;
 
-use Bedard\Shipping\Usps as Shipment;
+use Bedard\Shipping\USPS as Shipment;
 use Bedard\Shop\Classes\ShippingBase;
 use Bedard\Shop\Interfaces\ShippingInterface;
 
@@ -94,6 +94,7 @@ class USPS extends ShippingBase implements ShippingInterface {
             $usps->setDestination($this->cart->shipping_address->country->name);
         }
 
+        // If the package is a padded envelope, the weight must be atleast
         $packaging = 1;
         foreach ($this->cart->items as $item) {
             if ($item->inventory->product->packaging_id > $packaging) {
@@ -101,28 +102,26 @@ class USPS extends ShippingBase implements ShippingInterface {
             }
         }
 
-        $codes = $this->getCodes();
-        $dimensions = ['length' => 6, 'width' => 6, 'height' => 0.1];
-        if ($packaging == 1) {
-            $codes = array_diff($codes, ['_0', '_1', '3']);
-        } elseif ($packaging == 2) {
-            $codes = array_diff($codes, ['_0', '_2']);
-            $dimensions = ['length' => 12, 'width' => 10, 'height' => 0.1];
-        } elseif ($packaging == 3) {
-            $codes = array_diff($codes, ['_1', '_2']);
-            $dimensions = ['length' => 12, 'width' => 12, 'height' => 12];
-        }
-
         $usps
             ->setOrigin($this->getConfig('origin'))
             ->setDimensions([
-                'length'    => $dimensions['length'],
-                'width'     => $dimensions['width'],
-                'height'    => $dimensions['height'],
+                'length'    => 6,
+                'width'     => 6,
+                'height'    => 0.1,
                 'pounds'    => 0,
                 'ounces'    => $this->cart->getWeight('oz'),
             ])
             ->setValue($this->cart->subtotal);
+
+        $codes = $this->getCodes();
+
+        if ($packaging == 1) {
+            $codes = array_diff($codes, ['00', '01']);
+        } elseif ($packaging == 2) {
+            $codes = array_diff($codes, ['00', '02']);
+        } elseif ($packaging == 3) {
+            $codes = array_diff($codes, ['01', '02']);
+        }
 
         return array_filter($usps->calculate(), function($rate) use ($codes) {
             $rate['class'] = 'Bedard\USPS\Classes\USPS';
