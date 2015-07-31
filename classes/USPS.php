@@ -1,6 +1,6 @@
 <?php namespace Bedard\USPS\Classes;
 
-use Bedard\Shipping\USPS as Shipment;
+use Bedard\Shipping\Usps as Shipment;
 use Bedard\Shop\Classes\ShippingBase;
 use Bedard\Shop\Interfaces\ShippingInterface;
 
