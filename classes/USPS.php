@@ -115,7 +115,7 @@ class USPS extends ShippingBase implements ShippingInterface {
 
         $codes = $this->getCodes();
 
-        if ($packaging == 1) {
+        if ($packaging <= 1) {
             $codes = array_diff($codes, ['00', '01']);
         } elseif ($packaging == 2) {
             $codes = array_diff($codes, ['00', '02']);
