@@ -1,5 +1,6 @@
 <?php namespace Bedard\USPS\Classes;
 
+use Bedard\Shop\Models\Driver;
 use Bedard\Shipping\Usps as Shipment;
 use Bedard\Shop\Classes\ShippingBase;
 use Bedard\Shop\Interfaces\ShippingInterface;
@@ -138,7 +139,9 @@ class USPS extends ShippingBase implements ShippingInterface {
             $results[$i]['driver']  = 'U.S. Postal Service';
         }
 
-        return $results;
+        return !$results && $this->getConfig('use_table')
+            ? $this->deferToShippingTable()
+            : $results;
     }
 
     /**
@@ -160,5 +163,21 @@ class USPS extends ShippingBase implements ShippingInterface {
         return array_map(function($code) {
             return str_replace('_', '0', $code);
         }, $codes);
+    }
+
+    /**
+     * If no results are returned from USPS, defer to the basic shipping table
+     *
+     * @return  array
+     */
+    protected function deferToShippingTable()
+    {
+        $table = Driver::isShipping()->where('class', 'Bedard\Shop\Drivers\Shipping\BasicTable')->first();
+        if (!$table) return [];
+
+        $driver = $table->getClass();
+        $driver->setCart($this->cart);
+
+        return $driver->getRates();
     }
 }
