@@ -7,6 +7,11 @@ use Bedard\Shop\Interfaces\ShippingInterface;
 class USPS extends ShippingBase implements ShippingInterface {
 
     /**
+     * @var string  Unique key used to identify rates from this driver
+     */
+    protected $driver_id = 'USPS';
+
+    /**
      * Validation
      */
     public $rules = [
@@ -123,10 +128,17 @@ class USPS extends ShippingBase implements ShippingInterface {
             $codes = array_diff($codes, ['01', '02']);
         }
 
-        return array_filter($usps->calculate(), function($rate) use ($codes) {
-            $rate['class'] = 'Bedard\USPS\Classes\USPS';
+        $results = array_filter($usps->calculate(), function($rate) use ($codes) {
             return in_array($rate['code'], $codes, true);
         });
+
+        foreach ($results as $i => $result) {
+            $results[$i]['class']   = 'Bedard\USPS\Classes\USPS';
+            $results[$i]['id']      = $this->driver_id.'_'.$i;
+            $results[$i]['driver']  = 'U.S. Postal Service';
+        }
+
+        return $results;
     }
 
     /**
